@@ -1,28 +1,19 @@
-import { useState, useEffect } from 'react';
-import { FlatList, Image, StyleSheet, Text, View } from 'react-native';
-import { Link } from 'expo-router';
-import axios from 'axios';
-
-interface Product {
-  id: number;
-  title: string;
-  price: number;
-  description: string;
-  category: string;
-  image: string;
-}
-
+import { useState, useEffect } from "react";
+import { FlatList, Image, StyleSheet, Text, View } from "react-native";
+import { Link } from "expo-router";
+import { Product } from "../types";
+import { fetchProducts } from "../api/products";
 export default function HomeScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get<Product[]>('https://fakestoreapi.com/products')
-      .then(response => {
-        setProducts(response.data);
+    fetchProducts()
+      .then((res) => {
+        setProducts(res);
         setLoading(false);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error(error);
         setLoading(false);
       });
@@ -53,36 +44,36 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#fff'
+    backgroundColor: "#fff",
   },
   list: {
-    gap: 16
+    gap: 16,
   },
   productCard: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
     elevation: 3,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1
+    shadowOpacity: 0.1,
   },
   productImage: {
-    width: '100%',
+    width: "100%",
     height: 200,
-    resizeMode: 'contain'
+    resizeMode: "contain",
   },
   productInfo: {
-    padding: 12
+    padding: 12,
   },
   productTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4
+    fontWeight: "600",
+    marginBottom: 4,
   },
   productPrice: {
     fontSize: 18,
-    color: '#2f95dc',
-    fontWeight: 'bold'
-  }
+    color: "#2f95dc",
+    fontWeight: "bold",
+  },
 });

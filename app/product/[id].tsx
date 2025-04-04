@@ -1,24 +1,19 @@
-import { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import { Image } from 'expo-image';
-import axios from 'axios';
-import { useCart } from '@/context/CartContext';
-import { FontAwesome } from '@expo/vector-icons';
-import { useToast } from 'react-native-toast-notifications';
-
-interface Product {
-  id: number;
-  title: string;
-  price: number;
-  description: string;
-  category: string;
-  image: string;
-  rating?: {
-    rate: number;
-    count: number;
-  };
-}
+import { useState, useEffect } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { Image } from "expo-image";
+import { useCart } from "@/context/CartContext";
+import { FontAwesome } from "@expo/vector-icons";
+import { useToast } from "react-native-toast-notifications";
+import { Product } from "@/types";
+import { fetchProduct } from "@/api/products";
 
 export default function ProductScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -29,44 +24,48 @@ export default function ProductScreen() {
   const productId = Number(id);
 
   useEffect(() => {
-    axios.get<Product>(`https://fakestoreapi.com/products/${productId}`)
-      .then(response => {
-        setProduct(response.data);
-        setLoading(false);
-      })
-      .catch(error => {
+    const fetchProductData = async () => {
+      try {
+        const response = await fetchProduct(productId);
+        setProduct(response);
+      } catch (error) {
         console.error(error);
-        toast.show('Failed to load product', { type: 'danger' });
+        toast.show("Failed to load product", { type: "danger" });
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+    fetchProductData();
   }, [productId]);
 
-  if (loading) return (
-    <View style={styles.loadingContainer}>
-      <ActivityIndicator size="large" color="#2f95dc" />
-    </View>
-  );
+  if (loading)
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2f95dc" />
+      </View>
+    );
 
-  if (!product) return (
-    <View style={styles.errorContainer}>
-      <Text style={styles.errorText}>Product not found</Text>
-    </View>
-  );
+  if (!product)
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Product not found</Text>
+      </View>
+    );
 
   return (
     <ScrollView style={styles.container}>
       {/* Product Image */}
-      <Image 
+      <Image
         source={{ uri: product.image }}
         style={styles.image}
-        placeholder={{ blurhash: 'LKN]Rv%2Tw=w]TWBV?Ri%MD$RjR+' }}
+        placeholder={{ blurhash: "LKN]Rv%2Tw=w]TWBV?Ri%MD$RjR+" }}
         transition={300}
       />
-      
+
       {/* Product Details */}
       <View style={styles.details}>
         <Text style={styles.title}>{product.title}</Text>
-        
+
         {/* Price and Rating */}
         <View style={styles.priceRatingContainer}>
           <Text style={styles.price}>${product.price.toFixed(2)}</Text>
@@ -88,18 +87,18 @@ export default function ProductScreen() {
 
         {/* Description */}
         <Text style={styles.description}>{product.description}</Text>
-        
+
         {/* Add to Cart Button */}
-        <Pressable 
+        <Pressable
           style={({ pressed }) => [
             styles.addToCartButton,
-            { opacity: pressed ? 0.8 : 1 }
+            { opacity: pressed ? 0.8 : 1 },
           ]}
           onPress={() => {
             addToCart(product);
-            toast.show('Added to cart!', { 
-              type: 'success',
-              placement: 'bottom'
+            toast.show("Added to cart!", {
+              type: "success",
+              placement: "bottom",
             });
           }}
         >
@@ -114,86 +113,86 @@ export default function ProductScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff'
+    backgroundColor: "#fff",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center'
+    justifyContent: "center",
+    alignItems: "center",
   },
   errorContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
   },
   errorText: {
     fontSize: 18,
-    color: '#ff4444'
+    color: "#ff4444",
   },
   image: {
-    width: '100%',
+    width: "100%",
     height: 300,
-    resizeMode: 'contain',
-    backgroundColor: '#f5f5f5'
+    resizeMode: "contain",
+    backgroundColor: "#f5f5f5",
   },
   details: {
-    padding: 20
+    padding: 20,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8
+    fontWeight: "bold",
+    marginBottom: 8,
   },
   priceRatingContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
   },
   price: {
     fontSize: 20,
-    color: '#2f95dc',
-    fontWeight: 'bold'
+    color: "#2f95dc",
+    fontWeight: "bold",
   },
   ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   ratingText: {
     fontSize: 14,
-    color: '#666'
+    color: "#666",
   },
   categoryContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
-    marginBottom: 16
+    marginBottom: 16,
   },
   category: {
     fontSize: 16,
-    color: '#666',
-    textTransform: 'capitalize'
+    color: "#666",
+    textTransform: "capitalize",
   },
   description: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#333',
-    marginBottom: 24
+    color: "#333",
+    marginBottom: 24,
   },
   addToCartButton: {
-    flexDirection: 'row',
-    backgroundColor: '#2f95dc',
+    flexDirection: "row",
+    backgroundColor: "#2f95dc",
     padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
   },
   buttonText: {
-    color: 'white',
+    color: "white",
     fontSize: 18,
-    fontWeight: 'bold'
-  }
+    fontWeight: "bold",
+  },
 });
