@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Image, ScrollView, Pressable } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { Image } from 'expo-image';
 import axios from 'axios';
 import { useCart } from '@/context/CartContext';
+import { FontAwesome } from '@expo/vector-icons';
+import { useToast } from 'react-native-toast-notifications';
 
 interface Product {
   id: number;
@@ -11,32 +14,99 @@ interface Product {
   description: string;
   category: string;
   image: string;
+  rating?: {
+    rate: number;
+    count: number;
+  };
 }
 
 export default function ProductScreen() {
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
+  const toast = useToast();
+  const productId = Number(id);
 
   useEffect(() => {
-    axios.get<Product>(`https://fakestoreapi.com/products/${id}`)
+    axios.get<Product>(`https://fakestoreapi.com/products/${productId}`)
       .then(response => {
         setProduct(response.data);
         setLoading(false);
       })
       .catch(error => {
         console.error(error);
+        toast.show('Failed to load product', { type: 'danger' });
         setLoading(false);
       });
-  }, [id]);
+  }, [productId]);
 
-  if (loading) return <Text>Loading...</Text>;
-  if (!product) return <Text>Product not found</Text>;
+  if (loading) return (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator size="large" color="#2f95dc" />
+    </View>
+  );
+
+  if (!product) return (
+    <View style={styles.errorContainer}>
+      <Text style={styles.errorText}>Product not found</Text>
+    </View>
+  );
 
   return (
     <ScrollView style={styles.container}>
-      {/* ... (same rendering logic as before) */}
+      {/* Product Image */}
+      <Image 
+        source={{ uri: product.image }}
+        style={styles.image}
+        placeholder={{ blurhash: 'LKN]Rv%2Tw=w]TWBV?Ri%MD$RjR+' }}
+        transition={300}
+      />
+      
+      {/* Product Details */}
+      <View style={styles.details}>
+        <Text style={styles.title}>{product.title}</Text>
+        
+        {/* Price and Rating */}
+        <View style={styles.priceRatingContainer}>
+          <Text style={styles.price}>${product.price.toFixed(2)}</Text>
+          {product.rating && (
+            <View style={styles.ratingContainer}>
+              <FontAwesome name="star" size={16} color="#FFD700" />
+              <Text style={styles.ratingText}>
+                {product.rating.rate} ({product.rating.count} reviews)
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Category */}
+        <View style={styles.categoryContainer}>
+          <FontAwesome name="tag" size={16} color="#666" />
+          <Text style={styles.category}>{product.category}</Text>
+        </View>
+
+        {/* Description */}
+        <Text style={styles.description}>{product.description}</Text>
+        
+        {/* Add to Cart Button */}
+        <Pressable 
+          style={({ pressed }) => [
+            styles.addToCartButton,
+            { opacity: pressed ? 0.8 : 1 }
+          ]}
+          onPress={() => {
+            addToCart(product);
+            toast.show('Added to cart!', { 
+              type: 'success',
+              placement: 'bottom'
+            });
+          }}
+        >
+          <FontAwesome name="cart-plus" size={20} color="white" />
+          <Text style={styles.buttonText}>Add to Cart</Text>
+        </Pressable>
+      </View>
     </ScrollView>
   );
 }
@@ -45,6 +115,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff'
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20
+  },
+  errorText: {
+    fontSize: 18,
+    color: '#ff4444'
   },
   image: {
     width: '100%',
@@ -60,23 +145,42 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8
   },
+  priceRatingContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16
+  },
   price: {
     fontSize: 20,
     color: '#2f95dc',
-    fontWeight: 'bold',
-    marginBottom: 12
+    fontWeight: 'bold'
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4
+  },
+  ratingText: {
+    fontSize: 14,
+    color: '#666'
+  },
+  categoryContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16
   },
   category: {
     fontSize: 16,
     color: '#666',
-    marginBottom: 16,
     textTransform: 'capitalize'
   },
   description: {
     fontSize: 16,
     lineHeight: 24,
-    marginBottom: 24,
-    color: '#333'
+    color: '#333',
+    marginBottom: 24
   },
   addToCartButton: {
     flexDirection: 'row',
