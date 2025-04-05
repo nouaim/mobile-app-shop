@@ -1,12 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface Product {
-  id: number;
-  title: string;
-  price: number;
-  image: string;
-}
-
+import { Product } from '../types';
 interface CartContextType {
   cart: Product[];
   addToCart: (product: Product) => void;
