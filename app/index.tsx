@@ -27,7 +27,7 @@ export default function HomeScreen() {
         data={products}
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (
-          <Link href={`/product/${item.id}`} style={styles.productCard}>
+          <Link href={`/product/${item.id}`}>
             <Image source={{ uri: item.image }} style={styles.productImage} />
             <View style={styles.productInfo}>
               <Text style={styles.productTitle}>{item.title}</Text>
@@ -48,6 +48,8 @@ const styles = StyleSheet.create({
   },
   list: {
     gap: 16,
+    justifyContent: "center",
+    alignItems: "center",
   },
   productCard: {
     backgroundColor: "white",
@@ -65,6 +67,8 @@ const styles = StyleSheet.create({
   },
   productInfo: {
     padding: 12,
+    justifyContent: "center",
+    alignItems: "center",
   },
   productTitle: {
     fontSize: 16,
