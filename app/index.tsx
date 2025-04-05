@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
-import { FlatList, Image, StyleSheet, Text, View } from "react-native";
+import { FlatList, Image, StyleSheet, Text, View, TextInput, Pressable, Dimensions } from "react-native";
 import { Link } from "expo-router";
 import { Product } from "../types";
 import { fetchProducts, fetchCategories } from "../api/products";
-import { Pressable } from "react-native";
 
 export default function HomeScreen() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -33,41 +34,65 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
+    let result = allProducts;
+    
     if (selectedCategory) {
-      setFilteredProducts(
-        allProducts.filter(product => product.category === selectedCategory)
-      );
-    } else {
-      setFilteredProducts(allProducts);
+      result = result.filter(product => product.category === selectedCategory);
     }
-  }, [selectedCategory, allProducts]);
+    
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(product => 
+        product.title.toLowerCase().includes(query) ||
+        product.description.toLowerCase().includes(query)
+      );
+    }
+    
+    setFilteredProducts(result);
+  }, [selectedCategory, searchQuery, allProducts]);
 
   if (loading) return <Text style={styles.loading}>Loading products...</Text>;
 
   return (
     <View style={styles.container}>
+      {/* Search Field (shown above categories on small screens) */}
+      <View style={[styles.searchContainer, isSearchFocused && styles.searchContainerFocused]}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search products..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          clearButtonMode="while-editing"
+          onFocus={() => setIsSearchFocused(true)}
+          onBlur={() => setIsSearchFocused(false)}
+        />
+      </View>
+
       {/* Category Filter Row */}
-      <View style={styles.categoryContainer}>
-        <Pressable
-          style={[styles.categoryItem, !selectedCategory && styles.activeCategory]}
-          onPress={() => setSelectedCategory(null)}
-        >
-          <Text style={[styles.categoryText, !selectedCategory && styles.activeCategoryText]}>
-            All
-          </Text>
-        </Pressable>
-        
-        {categories.map((category) => (
-          <Pressable
-            key={category}
-            style={[styles.categoryItem, selectedCategory === category && styles.activeCategory]}
-            onPress={() => setSelectedCategory(category)}
-          >
-            <Text style={[styles.categoryText, selectedCategory === category && styles.activeCategoryText]}>
-              {category}
-            </Text>
-          </Pressable>
-        ))}
+      <View style={styles.categoryScrollContainer}>
+        <FlatList
+          horizontal
+          data={['all', ...categories]}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryContainer}
+          renderItem={({ item }) => (
+            <Pressable
+              style={[
+                styles.categoryItem, 
+                (item === 'all' ? !selectedCategory : selectedCategory === item) && styles.activeCategory
+              ]}
+              onPress={() => setSelectedCategory(item === 'all' ? null : item)}
+            >
+              <Text style={[
+                styles.categoryText,
+                (item === 'all' ? !selectedCategory : selectedCategory === item) && styles.activeCategoryText
+              ]}>
+                {item === 'all' ? 'All' : item}
+              </Text>
+            </Pressable>
+          )}
+          keyExtractor={(item) => item}
+        />
       </View>
 
       {/* Product List */}
@@ -88,10 +113,16 @@ export default function HomeScreen() {
           </View>
         )}
         keyExtractor={(item) => item.id.toString()}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No products found matching your criteria</Text>
+        }
       />
     </View>
   );
 }
+
+const { width } = Dimensions.get('window');
+const isSmallScreen = width < 375;
 
 const styles = StyleSheet.create({
   container: {
@@ -102,6 +133,28 @@ const styles = StyleSheet.create({
   loading: {
     textAlign: "center",
     marginTop: 20,
+  },
+  searchContainer: {
+    marginBottom: 12,
+  },
+  searchContainerFocused: {
+    marginBottom: 8,
+  },
+  searchInput: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    backgroundColor: '#fff',
+    fontSize: isSmallScreen ? 14 : 16,
+  },
+  categoryScrollContainer: {
+    marginBottom: 16,
+  },
+  categoryContainer: {
+    gap: 8,
+    paddingRight: 16, // Extra padding to ensure last item is not cut off
   },
   list: {
     gap: 16,
@@ -133,14 +186,8 @@ const styles = StyleSheet.create({
     color: "#2f95dc",
     fontWeight: "bold",
   },
-  categoryContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    paddingBottom: 16,
-  },
   categoryItem: {
-    paddingHorizontal: 12,
+    paddingHorizontal: isSmallScreen ? 10 : 12,
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: '#fff',
@@ -153,9 +200,16 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     textTransform: 'capitalize',
+    fontSize: isSmallScreen ? 12 : 14,
   },
   activeCategoryText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#666',
   },
 });
