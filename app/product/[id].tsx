@@ -6,19 +6,21 @@ import {
   ScrollView,
   Pressable,
   ActivityIndicator,
+  Alert,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, router } from "expo-router";
 import { Image } from "expo-image";
 import { useCart } from "@/context/CartContext";
 import { FontAwesome } from "@expo/vector-icons";
 import { useToast } from "react-native-toast-notifications";
 import { Product } from "@/types";
-import { fetchProduct } from "@/api/products";
+import { fetchProduct, deleteProduct } from "@/api/products";
 
 export default function ProductScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { addToCart } = useCart();
   const toast = useToast();
   const productId = Number(id);
@@ -37,6 +39,40 @@ export default function ProductScreen() {
     };
     fetchProductData();
   }, [productId]);
+
+  const handleDelete = async () => {
+    Alert.alert(
+      "Delete Product",
+      "Are you sure you want to delete this product?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setIsDeleting(true);
+              await deleteProduct(productId);
+              toast.show("Product deleted successfully", { type: "success" });
+              router.back();
+            } catch (error) {
+              console.error(error);
+              toast.show("Failed to delete product", { type: "danger" });
+            } finally {
+              setIsDeleting(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleEdit = () => {
+    router.push(`/product/edit/${productId}`);
+  };
 
   if (loading)
     return (
@@ -87,6 +123,38 @@ export default function ProductScreen() {
 
         {/* Description */}
         <Text style={styles.description}>{product.description}</Text>
+
+        {/* Action Buttons */}
+        <View style={styles.actionButtonsContainer}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.editButton,
+              { opacity: pressed ? 0.8 : 1 },
+            ]}
+            onPress={handleEdit}
+          >
+            <FontAwesome name="edit" size={20} color="white" />
+            <Text style={styles.buttonText}>Edit</Text>
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.deleteButton,
+              { opacity: pressed ? 0.8 : 1 },
+            ]}
+            onPress={handleDelete}
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <>
+                <FontAwesome name="trash" size={20} color="white" />
+                <Text style={styles.buttonText}>Delete</Text>
+              </>
+            )}
+          </Pressable>
+        </View>
 
         {/* Add to Cart Button */}
         <Pressable
@@ -180,6 +248,31 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: "#333",
     marginBottom: 24,
+  },
+  actionButtonsContainer: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 16,
+  },
+  editButton: {
+    flex: 1,
+    flexDirection: "row",
+    backgroundColor: "#4CAF50",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+  },
+  deleteButton: {
+    flex: 1,
+    flexDirection: "row",
+    backgroundColor: "#F44336",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
   },
   addToCartButton: {
     flexDirection: "row",

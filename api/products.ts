@@ -1,18 +1,5 @@
-// api/products.ts
 import axios from "axios";
-
-export interface Product {
-  id: number;
-  title: string;
-  price: number;
-  description: string;
-  category: string;
-  image: string;
-  rating?: {
-    rate: number;
-    count: number;
-  };
-}
+import { Product } from "../types";
 
 export const fetchProduct = async (id: number): Promise<Product> => {
   try {
@@ -61,3 +48,39 @@ export const fetchProductsByCategory = async (
     throw error;
   }
 };
+
+export const createProduct = async (product: Product): Promise<Product> => {
+  try {
+    const response = await axios.post<Product>(
+      "https://fakestoreapi.com/products",
+      product
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error creating product:", error);
+    throw error;
+  }
+};
+export const updateProduct = async (
+  id: number,
+  product: Partial<Product>
+): Promise<Product> => {
+  try {
+    const response = await axios.put<Product>(
+      `https://fakestoreapi.com/products/${id}`,
+      product
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating product:", error);
+    throw error;
+  }
+}
+export const deleteProduct = async (id: number): Promise<void> => {
+  try {
+    await axios.delete(`https://fakestoreapi.com/products/${id}`);
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    throw error;
+  }
+}
