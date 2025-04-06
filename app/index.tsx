@@ -1,9 +1,19 @@
 import { useState, useEffect } from "react";
-import { FlatList, Image, StyleSheet, Text, View, TextInput, Pressable, Dimensions } from "react-native";
+import {
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  Pressable,
+  Dimensions,
+} from "react-native";
 import { Link, useRouter } from "expo-router";
 import { Product } from "../types";
 import { fetchProducts, fetchCategories } from "../api/products";
-import { User, logout, getCurrentUser} from "../api/auth";
+import { User, canPerformAction, logout, getCurrentUser } from "../api/auth";
+import { FontAwesome } from "@expo/vector-icons";
 
 export default function HomeScreen() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -33,7 +43,7 @@ export default function HomeScreen() {
       try {
         const [productsData, categoriesData] = await Promise.all([
           fetchProducts(),
-          fetchCategories()
+          fetchCategories(),
         ]);
         setAllProducts(productsData);
         setFilteredProducts(productsData);
@@ -47,23 +57,25 @@ export default function HomeScreen() {
 
     loadData();
   }, []);
-  
 
   useEffect(() => {
     let result = allProducts;
-    
+
     if (selectedCategory) {
-      result = result.filter(product => product.category === selectedCategory);
-    }
-    
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(product => 
-        product.title.toLowerCase().includes(query) ||
-        product.description.toLowerCase().includes(query)
+      result = result.filter(
+        (product) => product.category === selectedCategory
       );
     }
-    
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (product) =>
+          product.title.toLowerCase().includes(query) ||
+          product.description.toLowerCase().includes(query)
+      );
+    }
+
     setFilteredProducts(result);
   }, [selectedCategory, searchQuery, allProducts]);
 
@@ -87,7 +99,12 @@ export default function HomeScreen() {
           </Pressable>
         )}
       </View>
-      <View style={[styles.searchContainer, isSearchFocused && styles.searchContainerFocused]}>
+      <View
+        style={[
+          styles.searchContainer,
+          isSearchFocused && styles.searchContainerFocused,
+        ]}
+      >
         <TextInput
           style={styles.searchInput}
           placeholder="Search products..."
@@ -103,28 +120,44 @@ export default function HomeScreen() {
       <View style={styles.categoryScrollContainer}>
         <FlatList
           horizontal
-          data={['all', ...categories]}
+          data={["all", ...categories]}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoryContainer}
           renderItem={({ item }) => (
             <Pressable
               style={[
-                styles.categoryItem, 
-                (item === 'all' ? !selectedCategory : selectedCategory === item) && styles.activeCategory
+                styles.categoryItem,
+                (item === "all"
+                  ? !selectedCategory
+                  : selectedCategory === item) && styles.activeCategory,
               ]}
-              onPress={() => setSelectedCategory(item === 'all' ? null : item)}
+              onPress={() => setSelectedCategory(item === "all" ? null : item)}
             >
-              <Text style={[
-                styles.categoryText,
-                (item === 'all' ? !selectedCategory : selectedCategory === item) && styles.activeCategoryText
-              ]}>
-                {item === 'all' ? 'All' : item}
+              <Text
+                style={[
+                  styles.categoryText,
+                  (item === "all"
+                    ? !selectedCategory
+                    : selectedCategory === item) && styles.activeCategoryText,
+                ]}
+              >
+                {item === "all" ? "All" : item}
               </Text>
             </Pressable>
           )}
           keyExtractor={(item) => item}
         />
       </View>
+
+      {isAuth && canPerformAction("create") && (
+        <Pressable
+          style={styles.createButton}
+          onPress={() => router.push("/product/create")}
+        >
+          <FontAwesome name="plus" size={20} color="white" />
+          <Text style={styles.createButtonText}>Create Product</Text>
+        </Pressable>
+      )}
 
       {/* Product List */}
       <FlatList
@@ -134,10 +167,15 @@ export default function HomeScreen() {
           <View style={styles.productCard}>
             <Link href={`/product/${item.id}`} asChild>
               <View>
-                <Image source={{ uri: item.image }} style={styles.productImage} />
+                <Image
+                  source={{ uri: item.image }}
+                  style={styles.productImage}
+                />
                 <View style={styles.productInfo}>
                   <Text style={styles.productTitle}>{item.title}</Text>
-                  <Text style={styles.productPrice}>${item.price.toFixed(2)}</Text>
+                  <Text style={styles.productPrice}>
+                    ${item.price.toFixed(2)}
+                  </Text>
                 </View>
               </View>
             </Link>
@@ -145,14 +183,16 @@ export default function HomeScreen() {
         )}
         keyExtractor={(item) => item.id.toString()}
         ListEmptyComponent={
-          <Text style={styles.emptyText}>No products found matching your criteria</Text>
+          <Text style={styles.emptyText}>
+            No products found matching your criteria
+          </Text>
         }
       />
     </View>
   );
 }
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 const isSmallScreen = width < 375;
 
 const styles = StyleSheet.create({
@@ -174,10 +214,10 @@ const styles = StyleSheet.create({
   searchInput: {
     height: 40,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 20,
     paddingHorizontal: 16,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     fontSize: isSmallScreen ? 14 : 16,
   },
   categoryScrollContainer: {
@@ -221,46 +261,46 @@ const styles = StyleSheet.create({
     paddingHorizontal: isSmallScreen ? 10 : 12,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
   },
   activeCategory: {
-    backgroundColor: '#2f95dc',
-    borderColor: '#2f95dc',
+    backgroundColor: "#2f95dc",
+    borderColor: "#2f95dc",
   },
   categoryText: {
-    textTransform: 'capitalize',
+    textTransform: "capitalize",
     fontSize: isSmallScreen ? 12 : 14,
   },
   activeCategoryText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
   },
   emptyText: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 20,
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   header: {
     padding: 16,
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   authButton: {
     padding: 8,
     borderRadius: 4,
-    backgroundColor: '#2f95dc',
+    backgroundColor: "#2f95dc",
   },
   authButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
   },
   userContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   userText: {
@@ -271,20 +311,23 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 4,
   },
   createButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    backgroundColor: '#2f95dc',
-    padding: 16,
-    borderRadius: 30,
-    elevation: 4,
+    flexDirection: "row",
+    backgroundColor: "#2f95dc",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginBottom: 16,
+    alignSelf: "flex-start",
   },
   createButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
