@@ -45,9 +45,14 @@ const LoginScreen = () => {
       {/* Logo/Header */}
       <View style={styles.header}>
         <Image 
-          source={require("@/assets/images/react-logo.png")} 
+          source={require("@/assets/images/ChatGPT-logo.png")} 
           style={styles.logo}
           resizeMode="contain"
+          accessibilityLabel="Logo"
+          accessibilityHint="This is the logo of the application."
+          accessibilityRole="image"
+          accessibilityState={{ checked: false }}
+          accessibilityLabelledBy="logo"
         />
         <Text style={styles.title}>Welcome Back</Text>
         <Text style={styles.subtitle}>Sign in to your account</Text>
