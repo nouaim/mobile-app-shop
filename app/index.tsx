@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { FlatList, Image, StyleSheet, Text, View, TextInput, Pressable, Dimensions } from "react-native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { Product } from "../types";
 import { fetchProducts, fetchCategories } from "../api/products";
+import { User, logout, getCurrentUser} from "../api/auth";
 
 export default function HomeScreen() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -12,6 +13,20 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const user = getCurrentUser();
+
+  const isAuth = user !== null;
+
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
+
+  const handleLogin = () => {
+    router.push("/login");
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -32,6 +47,7 @@ export default function HomeScreen() {
 
     loadData();
   }, []);
+  
 
   useEffect(() => {
     let result = allProducts;
@@ -56,6 +72,21 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       {/* Search Field (shown above categories on small screens) */}
+
+      <View style={styles.header}>
+        {user ? (
+          <View style={styles.userContainer}>
+            <Text style={styles.userText}>Welcome, {user.name}</Text>
+            <Pressable onPress={handleLogout} style={styles.authButton}>
+              <Text style={styles.authButtonText}>Logout</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <Pressable onPress={handleLogin} style={styles.authButton}>
+            <Text style={styles.authButtonText}>Login</Text>
+          </Pressable>
+        )}
+      </View>
       <View style={[styles.searchContainer, isSearchFocused && styles.searchContainerFocused]}>
         <TextInput
           style={styles.searchInput}
@@ -211,5 +242,49 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     color: '#666',
+  },
+  header: {
+    padding: 16,
+    alignItems: 'flex-end',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  authButton: {
+    padding: 8,
+    borderRadius: 4,
+    backgroundColor: '#2f95dc',
+  },
+  authButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  userContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  userText: {
+    fontSize: 16,
+  },
+  listContent: {
+    padding: 16,
+  },
+  productName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  createButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#2f95dc',
+    padding: 16,
+    borderRadius: 30,
+    elevation: 4,
+  },
+  createButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
