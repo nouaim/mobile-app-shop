@@ -15,6 +15,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useToast } from "react-native-toast-notifications";
 import { Product } from "@/types";
 import { fetchProduct, deleteProduct } from "@/api/products";
+import { canPerformAction, getCurrentUser } from "@/api/auth";
 
 export default function ProductScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -24,6 +25,8 @@ export default function ProductScreen() {
   const { addToCart } = useCart();
   const toast = useToast();
   const productId = Number(id);
+  const user = getCurrentUser();
+  const isAuth = user !== null;
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -126,34 +129,38 @@ export default function ProductScreen() {
 
         {/* Action Buttons */}
         <View style={styles.actionButtonsContainer}>
-          <Pressable
-            style={({ pressed }) => [
-              styles.editButton,
-              { opacity: pressed ? 0.8 : 1 },
-            ]}
-            onPress={handleEdit}
-          >
-            <FontAwesome name="edit" size={20} color="white" />
-            <Text style={styles.buttonText}>Edit</Text>
-          </Pressable>
+          {isAuth && canPerformAction("update") && (
+            <Pressable
+              style={({ pressed }) => [
+                styles.editButton,
+                { opacity: pressed ? 0.8 : 1 },
+              ]}
+              onPress={handleEdit}
+            >
+              <FontAwesome name="edit" size={20} color="white" />
+              <Text style={styles.buttonText}>Edit</Text>
+            </Pressable>
+          )}
 
-          <Pressable
-            style={({ pressed }) => [
-              styles.deleteButton,
-              { opacity: pressed ? 0.8 : 1 },
-            ]}
-            onPress={handleDelete}
-            disabled={isDeleting}
-          >
-            {isDeleting ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <>
-                <FontAwesome name="trash" size={20} color="white" />
-                <Text style={styles.buttonText}>Delete</Text>
-              </>
-            )}
-          </Pressable>
+          {isAuth && canPerformAction("delete") && (
+            <Pressable
+              style={({ pressed }) => [
+                styles.deleteButton,
+                { opacity: pressed ? 0.8 : 1 },
+              ]}
+              onPress={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <>
+                  <FontAwesome name="trash" size={20} color="white" />
+                  <Text style={styles.buttonText}>Delete</Text>
+                </>
+              )}
+            </Pressable>
+          )}
         </View>
 
         {/* Add to Cart Button */}
