@@ -89,10 +89,15 @@ export default function HomeScreen() {
         {user ? (
           <View style={styles.userContainer}>
             <Text style={styles.userText}>Welcome, {user.name}</Text>
-            <Pressable onPress={handleLogout} style={styles.authButton}>
-              {/* <FontAwesome name="sign-out" size={20} color="white" /> */}
-
-              <Text style={styles.authButtonText}>Logout</Text>
+            <Pressable
+              onPress={handleLogout}
+              style={({ pressed }) => [
+                styles.logoutButton,
+                { opacity: pressed ? 0.6 : 1 }, // Feedback on press
+              ]}
+            >
+              <FontAwesome name="sign-out" size={20} color="#2f95dc" />
+              <Text style={styles.logoutText}>Logout</Text>
             </Pressable>
           </View>
         ) : (
@@ -331,5 +336,17 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: 'transparent', // Avoid red (reserved for destructive actions)
+  },
+  logoutText: {
+    marginLeft: 8,
+    color: '#2f95dc', // Red for caution
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
