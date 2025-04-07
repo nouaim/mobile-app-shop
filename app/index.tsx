@@ -14,6 +14,7 @@ import { Product } from "../types";
 import { fetchProducts, fetchCategories } from "../api/products";
 import { User, canPerformAction, logout, getCurrentUser } from "../api/auth";
 import { FontAwesome } from "@expo/vector-icons";
+import { TouchableOpacity } from "react-native";
 
 export default function HomeScreen() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -89,21 +90,36 @@ export default function HomeScreen() {
         {user ? (
           <View style={styles.userContainer}>
             <Text style={styles.userText}>Welcome, {user.name}</Text>
-            <Pressable
+            <TouchableOpacity
               onPress={handleLogout}
-              style={({ pressed }) => [
-                styles.logoutButton,
-                { opacity: pressed ? 0.6 : 1 }, // Feedback on press
-              ]}
+              style={styles.iconButton}
+              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }} // Larger tap area
             >
-              <FontAwesome name="sign-out" size={20} color="#2f95dc" />
-              <Text style={styles.logoutText}>Logout</Text>
-            </Pressable>
+              <FontAwesome name="sign-out" size={24} color="#2f95dc" />
+            </TouchableOpacity>
           </View>
         ) : (
-          <Pressable onPress={handleLogin} style={styles.authButton}>
-            <Text style={styles.authButtonText}>Login</Text>
-          </Pressable>
+          // <Pressable onPress={handleLogin} style={styles.authButton}>
+          //   <FontAwesome name="sign-in" size={24} color="#2f95dc" />
+
+          //   <Text style={styles.authButtonText}>Login</Text>
+          // </Pressable>
+          <TouchableOpacity
+            onPress={handleLogin}
+            style={styles.loginButton}
+            activeOpacity={0.7} // Smoother feedback
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          >
+            <View style={styles.buttonContent}>
+              <Text style={styles.buttonText}>Login</Text>
+              <FontAwesome
+                name="sign-in"
+                size={20}
+                color="#2f95dc"
+                style={styles.icon}
+              />
+            </View>
+          </TouchableOpacity>
         )}
       </View>
       <View
@@ -338,15 +354,48 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 12,
-    backgroundColor: 'transparent', // Avoid red (reserved for destructive actions)
+    backgroundColor: "transparent", // Avoid red (reserved for destructive actions)
   },
   logoutText: {
     marginLeft: 8,
-    color: '#2f95dc', // Red for caution
+    color: "#2f95dc", // Red for caution
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
+  },
+  iconButton: {
+    padding: 8,
+    borderRadius: 20,
+  },
+  loginButton: {
+    backgroundColor: "#f8f9fa", // Light background
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#2f95dc", // Matching icon color
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3, // Android shadow
+  },
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#2f95dc",
+    fontSize: 16,
+    fontWeight: "600",
+    marginRight: 8, // Space between text and icon
+  },
+  icon: {
+    marginLeft: 4, // Fine-tune icon position
   },
 });
