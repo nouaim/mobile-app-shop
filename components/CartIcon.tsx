@@ -5,10 +5,10 @@ import { FontAwesome } from '@expo/vector-icons';
 const CartIcon = ({ count = 0 }: { count?: number }) => {
   return (
     <View style={styles.container}>
-      <FontAwesome name="shopping-cart" size={24} color="black" />
+      <FontAwesome name="shopping-cart" size={24} color="#f8f9fa" />
       {count > 0 && (
         <View style={styles.badge}>
-          <Text style={styles.count}>{count}</Text>
+          <Text style={styles.count}>{count > 9 ? '9+' : count}</Text>
         </View>
       )}
     </View>
@@ -18,23 +18,29 @@ const CartIcon = ({ count = 0 }: { count?: number }) => {
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    padding: 8,
+    padding: 10,
+    marginRight: 8,
   },
   badge: {
     position: 'absolute',
-    right: -4,
-    top: -4,
-    backgroundColor: 'red',
+    right: 2,
+    top: 2,
+    backgroundColor: '#ff3b30',
     borderRadius: 10,
-    width: 20,
+    minWidth: 20,
     height: 20,
+    paddingHorizontal: 4,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#2f95dc',
   },
   count: {
     color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
+    fontSize: 11,
+    fontWeight: '900',
+    includeFontPadding: false,
+    textAlign: 'center',
   },
 });
 
