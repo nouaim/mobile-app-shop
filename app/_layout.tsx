@@ -12,6 +12,7 @@ export default function RootLayout() {
           <Stack
             screenOptions={{
               headerTitle: "Fake Store",
+              headerTintColor: '#fff',
               headerRight: () => <CartIcon />,
               headerStyle: styles.header,
               headerTitleStyle: styles.headerTitle,
