@@ -90,6 +90,8 @@ export default function HomeScreen() {
           <View style={styles.userContainer}>
             <Text style={styles.userText}>Welcome, {user.name}</Text>
             <Pressable onPress={handleLogout} style={styles.authButton}>
+              {/* <FontAwesome name="sign-out" size={20} color="white" /> */}
+
               <Text style={styles.authButtonText}>Logout</Text>
             </Pressable>
           </View>
@@ -152,7 +154,7 @@ export default function HomeScreen() {
       {isAuth && canPerformAction("create") && (
         <Pressable
           style={styles.createButton}
-          onPress={() => router.push("/product/create")}
+          onPress={() => router.push("/product/create/")}
         >
           <FontAwesome name="plus" size={20} color="white" />
           <Text style={styles.createButtonText}>Create Product</Text>

@@ -14,11 +14,22 @@ import { Image } from "expo-image";
 import { FontAwesome } from "@expo/vector-icons";
 import { useToast } from "react-native-toast-notifications";
 import { Product } from "@/types";
-import { fetchProduct, updateProduct } from "@/api/products";
+import { fetchProduct, updateProduct, createProduct } from "@/api/products";
 
-export default function EditProductScreen() {
+interface EditProductScreenProps {
+  isCreateMode?: boolean;
+}
+
+export default function EditProductScreen({ isCreateMode = false }: EditProductScreenProps) {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [product, setProduct] = useState<Partial<Product>>({
+
+  const [product, setProduct] = useState<Partial<Product>>(isCreateMode ? {
+    title: "",
+    price: 0,
+    description: "",
+    category: "",
+    image: "",
+  } : {
     title: "",
     price: 0,
     description: "",
@@ -57,12 +68,22 @@ export default function EditProductScreen() {
 
     try {
       setIsSubmitting(true);
-      await updateProduct(productId, product as Product);
-      toast.show("Product updated successfully", { type: "success" });
+      if (isCreateMode) {
+        // Call your create API function here
+        await createProduct(product as Product);
+        setProduct(product);
+        toast.show("Product created successfully", { type: "success" });
+      } else {
+        await updateProduct(productId, product as Product);
+        setProduct(product);
+        toast.show("Product updated successfully", { type: "success" });
+      }
       router.back();
     } catch (error) {
       console.error(error);
-      toast.show("Failed to update product", { type: "danger" });
+      toast.show(`Failed to ${isCreateMode ? "create" : "update"} product`, {
+        type: "danger",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -75,7 +96,7 @@ export default function EditProductScreen() {
       </View>
     );
 
-  if (!product)
+  if (!product && !isCreateMode)
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Product not found</Text>
@@ -94,7 +115,12 @@ export default function EditProductScreen() {
         />
         <Pressable
           style={styles.changeImageButton}
-          onPress={() => Alert.alert("Change Image", "Image upload functionality would go here")}
+          onPress={() =>
+            Alert.alert(
+              "Change Image",
+              "Image upload functionality would go here"
+            )
+          }
         >
           <FontAwesome name="camera" size={20} color="white" />
           <Text style={styles.changeImageText}>Change Image</Text>
@@ -170,7 +196,9 @@ export default function EditProductScreen() {
             {isSubmitting ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text style={styles.buttonText}>Save Changes</Text>
+              <Text style={styles.buttonText}>
+                {isCreateMode ? "Create Product" : "Edit Product"}
+              </Text>
             )}
           </Pressable>
         </View>
