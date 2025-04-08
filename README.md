@@ -48,3 +48,9 @@ Join our community of developers creating universal apps.
 # dev
 
 - use the edit component for creation
+
+# Credit
+
+- DeepSeek has given cool code ideas of most of the pages of this mobile app, and helped in the refactoring.
+- DeepSeek helped fix and improve some of the styles of the pages and made them look nicer.
+- The mobile idea is based on the corresponding web project: https://github.com/nouaim/ecommerce-sample 
