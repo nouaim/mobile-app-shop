@@ -16,6 +16,7 @@ import { useToast } from "react-native-toast-notifications";
 import { Product } from "@/types";
 import { fetchProduct, deleteProduct } from "@/api/products";
 import { canPerformAction, getCurrentUser } from "@/api/auth";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function ProductScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -44,33 +45,45 @@ export default function ProductScreen() {
   }, [productId]);
 
   const handleDelete = async () => {
-    Alert.alert(
-      "Delete Product",
-      "Are you sure you want to delete this product?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              setIsDeleting(true);
-              await deleteProduct(productId);
-              toast.show("Product deleted successfully", { type: "success" });
-              router.back();
-            } catch (error) {
-              console.error(error);
-              toast.show("Failed to delete product", { type: "danger" });
-            } finally {
-              setIsDeleting(false);
-            }
-          },
-        },
-      ]
-    );
+    // Alert.alert(
+    //   "Delete Product",
+    //   "Are you sure you want to delete this product?",
+    //   [
+    //     {
+    //       text: "Cancel",
+    //       style: "cancel",
+    //     },
+    //     {
+    //       text: "Delete",
+    //       style: "destructive",
+    //       onPress: async () => {
+    //         try {
+    //           setIsDeleting(true);
+    //           await deleteProduct(productId);
+    //           toast.show("Product deleted successfully", { type: "success" });
+    //           router.back();
+    //         } catch (error) {
+    //           console.error(error);
+    //           toast.show("Failed to delete product", { type: "danger" });
+    //         } finally {
+    //           setIsDeleting(false);
+    //         }
+    //       },
+    //     },
+    //   ]
+    // );
+
+    try {
+      setIsDeleting(true);
+      await deleteProduct(productId);
+      toast.show("Product deleted successfully", { type: "success" });
+      router.back();
+    } catch (error) {
+      console.error(error);
+      toast.show("Failed to delete product", { type: "danger" });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleEdit = () => {
@@ -92,96 +105,100 @@ export default function ProductScreen() {
     );
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Product Image */}
-      <Image
-        source={{ uri: product.image }}
-        style={styles.image}
-        placeholder={{ blurhash: "LKN]Rv%2Tw=w]TWBV?Ri%MD$RjR+" }}
-        transition={300}
-      />
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        <ScrollView style={styles.container}>
+          {/* Product Image */}
+          <Image
+            source={{ uri: product.image }}
+            style={styles.image}
+            placeholder={{ blurhash: "LKN]Rv%2Tw=w]TWBV?Ri%MD$RjR+" }}
+            transition={300}
+          />
 
-      {/* Product Details */}
-      <View style={styles.details}>
-        <Text style={styles.title}>{product.title}</Text>
+          {/* Product Details */}
+          <View style={styles.details}>
+            <Text style={styles.title}>{product.title}</Text>
 
-        {/* Price and Rating */}
-        <View style={styles.priceRatingContainer}>
-          <Text style={styles.price}>${product.price.toFixed(2)}</Text>
-          {product.rating && (
-            <View style={styles.ratingContainer}>
-              <FontAwesome name="star" size={16} color="#FFD700" />
-              <Text style={styles.ratingText}>
-                {product.rating.rate} ({product.rating.count} reviews)
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {/* Category */}
-        <View style={styles.categoryContainer}>
-          <FontAwesome name="tag" size={16} color="#666" />
-          <Text style={styles.category}>{product.category}</Text>
-        </View>
-
-        {/* Description */}
-        <Text style={styles.description}>{product.description}</Text>
-
-        {/* Action Buttons */}
-        <View style={styles.actionButtonsContainer}>
-          {isAuth && canPerformAction("update") && (
-            <Pressable
-              style={({ pressed }) => [
-                styles.editButton,
-                { opacity: pressed ? 0.8 : 1 },
-              ]}
-              onPress={handleEdit}
-            >
-              <FontAwesome name="edit" size={20} color="white" />
-              <Text style={styles.buttonText}>Edit</Text>
-            </Pressable>
-          )}
-
-          {isAuth && canPerformAction("delete") && (
-            <Pressable
-              style={({ pressed }) => [
-                styles.deleteButton,
-                { opacity: pressed ? 0.8 : 1 },
-              ]}
-              onPress={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <>
-                  <FontAwesome name="trash" size={20} color="white" />
-                  <Text style={styles.buttonText}>Delete</Text>
-                </>
+            {/* Price and Rating */}
+            <View style={styles.priceRatingContainer}>
+              <Text style={styles.price}>${product.price.toFixed(2)}</Text>
+              {product.rating && (
+                <View style={styles.ratingContainer}>
+                  <FontAwesome name="star" size={16} color="#FFD700" />
+                  <Text style={styles.ratingText}>
+                    {product.rating.rate} ({product.rating.count} reviews)
+                  </Text>
+                </View>
               )}
-            </Pressable>
-          )}
-        </View>
+            </View>
 
-        {/* Add to Cart Button */}
-        <Pressable
-          style={({ pressed }) => [
-            styles.addToCartButton,
-            { opacity: pressed ? 0.8 : 1 },
-          ]}
-          onPress={() => {
-            addToCart(product);
-            toast.show("Added to cart!", {
-              type: "success",
-              placement: "bottom",
-            });
-          }}
-        >
-          <FontAwesome name="cart-plus" size={20} color="white" />
-          <Text style={styles.buttonText}>Add to Cart</Text>
-        </Pressable>
-      </View>
-    </ScrollView>
+            {/* Category */}
+            <View style={styles.categoryContainer}>
+              <FontAwesome name="tag" size={16} color="#666" />
+              <Text style={styles.category}>{product.category}</Text>
+            </View>
+
+            {/* Description */}
+            <Text style={styles.description}>{product.description}</Text>
+
+            {/* Action Buttons */}
+            <View style={styles.actionButtonsContainer}>
+              {isAuth && canPerformAction("update") && (
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.editButton,
+                    { opacity: pressed ? 0.8 : 1 },
+                  ]}
+                  onPress={handleEdit}
+                >
+                  <FontAwesome name="edit" size={20} color="white" />
+                  <Text style={styles.buttonText}>Edit</Text>
+                </Pressable>
+              )}
+
+              {isAuth && canPerformAction("delete") && (
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.deleteButton,
+                    { opacity: pressed ? 0.8 : 1 },
+                  ]}
+                  onPress={handleDelete}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <>
+                      <FontAwesome name="trash" size={20} color="white" />
+                      <Text style={styles.buttonText}>Delete</Text>
+                    </>
+                  )}
+                </Pressable>
+              )}
+            </View>
+
+            {/* Add to Cart Button */}
+            <Pressable
+              style={({ pressed }) => [
+                styles.addToCartButton,
+                { opacity: pressed ? 0.8 : 1 },
+              ]}
+              onPress={() => {
+                addToCart(product);
+                toast.show("Added to cart!", {
+                  type: "success",
+                  placement: "bottom",
+                });
+              }}
+            >
+              <FontAwesome name="cart-plus" size={20} color="white" />
+              <Text style={styles.buttonText}>Add to Cart</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
