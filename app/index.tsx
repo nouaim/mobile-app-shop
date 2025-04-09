@@ -188,7 +188,10 @@ export default function HomeScreen() {
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (
           <View style={styles.productCard}>
-            <Link href={`/product/${item.id}`} asChild>
+            <Pressable
+              style={styles.productCard}
+              onPress={() => router.push(`/product/${item.id}`)}
+            >
               <View>
                 <Image
                   source={{ uri: item.image }}
@@ -201,7 +204,7 @@ export default function HomeScreen() {
                   </Text>
                 </View>
               </View>
-            </Link>
+            </Pressable>
           </View>
         )}
         keyExtractor={(item) => item.id.toString()}
