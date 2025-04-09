@@ -1,5 +1,3 @@
-Here's your README with centered images using HTML div tags, keeping everything else exactly the same:
-
 ```markdown
 # Welcome to your Expo App 👋
 
