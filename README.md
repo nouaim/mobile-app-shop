@@ -48,7 +48,7 @@ Join our community of developers creating universal apps:
   <img src="screenshots/guest-list.png" width="300">
 </div>
 
-### Admin View
+### Product Details Page
 <div align="center">
   <img src="screenshots/admin-edit-delete.png" width="300">
 </div>
