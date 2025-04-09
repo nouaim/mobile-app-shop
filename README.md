@@ -90,7 +90,7 @@ Click the delete button (if you don't see the delete button, it means you're not
 
 # Notes
 
-- Use the edit component for creation.
+- The edit component is used for the creation as well.
 
 # Credits
 - DeepSeek provided code ideas for most pages of this mobile app and helped with refactoring.
