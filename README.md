@@ -92,10 +92,6 @@ Click the delete button (if you don't see the delete button, it means you're not
 
 - The edit component is used for the creation as well.
 
-# List of issues
-
-1. local storage : https://github.com/nouaim/mobile-app-shop/issues/1
-
 # Credits
 - DeepSeek provided code ideas for most pages of this mobile app and helped with refactoring.
 - DeepSeek helped fix and improve some page styles to make them look better.
