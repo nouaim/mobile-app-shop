@@ -24,20 +24,32 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const user = getCurrentUser();
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuth, setIsAuth] = useState(false); 
 
-  const isAuth = user !== null;
 
   const router = useRouter();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
+    setUser(null);
+    setIsAuth(false);
     router.push("/");
   };
 
   const handleLogin = () => {
     router.push("/login");
   };
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+      setIsAuth(currentUser !== null);
+    };
+
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {

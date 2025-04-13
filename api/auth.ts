@@ -36,7 +36,6 @@ export const login = async (
   password: string,
 ): Promise<User | null> => {
   const user = USERS.find((u) => u.email === email);
-  console.warn(user);
 
   return new Promise((resolve) => {
     setTimeout(async () => {
