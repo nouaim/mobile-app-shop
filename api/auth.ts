@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // User roles
 export type UserRole = "admin" | "user" | "guest";
@@ -31,22 +31,26 @@ const USERS: User[] = [
 let currentUser: User | null = null;
 
 // Login function
-export const login = (
+export const login = async (
   email: string,
   password: string,
 ): Promise<User | null> => {
+  const user = USERS.find((u) => u.email === email);
+
   return new Promise((resolve) => {
-
-    const user = USERS.find((u) => u.email === email);
-    console.warn(user);
-
-    setTimeout(() => {
+    setTimeout(async () => {
       if (user) {
         // In a real app, you'd validate the password here
-        localStorage.setItem("user", JSON.stringify(user));
-        console.warn('local storage', localStorage.getItem("user"));
-        currentUser = user;
-        resolve(user);
+        try {
+          await AsyncStorage.setItem("user", JSON.stringify(user));
+          const storedUser = await AsyncStorage.getItem("user");
+          console.warn('AsyncStorage user:', storedUser);
+          currentUser = user;
+          resolve(user);
+        } catch (error) {
+          console.error('Error saving user:', error);
+          resolve(null);
+        }
       } else {
         resolve(null);
       }
@@ -55,26 +59,35 @@ export const login = (
 };
 
 // Logout function
-export const logout = (): void => {
-  localStorage.removeItem("user");
-  currentUser = null;
+export const logout = async (): Promise<void> => {
+  try {
+    await AsyncStorage.removeItem("user");
+    currentUser = null;
+  } catch (error) {
+    console.error('Error removing user:', error);
+  }
 };
 
 // Get current user
-export const getCurrentUser = (): User | null => {
+export const getCurrentUser = async (): Promise<User | null> => {
   if (currentUser) return currentUser;
 
-  const storedUser: any = localStorage.getItem("user");
-  if (storedUser) {
-    currentUser = JSON.parse(storedUser);
-    return currentUser;
+  try {
+    const storedUser = await AsyncStorage.getItem("user");
+    if (storedUser) {
+      currentUser = JSON.parse(storedUser);
+      return currentUser;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting user:', error);
+    return null;
   }
-  return null;
 };
 
 // Check if user has specific role
-export const hasRole = (role: UserRole): boolean => {
-  const user = getCurrentUser();
+export const hasRole = async (role: UserRole): Promise<boolean> => {
+  const user = await getCurrentUser();
   if (!user) return false;
 
   // Admin has all privileges
@@ -85,15 +98,16 @@ export const hasRole = (role: UserRole): boolean => {
 };
 
 // Check if user is authenticated
-export const isAuthenticated = (): boolean => {
-  return getCurrentUser() !== null;
+export const isAuthenticated = async (): Promise<boolean> => {
+  const user = await getCurrentUser();
+  return user !== null;
 };
 
 // Permission check for specific actions
-export const canPerformAction = (
+export const canPerformAction = async (
   action: "create" | "update" | "delete"
-): boolean => {
-  const user = getCurrentUser();
+): Promise<boolean> => {
+  const user = await getCurrentUser();
   if (!user) return false;
 
   // Admins can do everything
