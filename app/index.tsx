@@ -25,7 +25,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [isAuth, setIsAuth] = useState(false); 
+  const [isAuth, setIsAuth] = useState(false);
 
 
   const router = useRouter();
